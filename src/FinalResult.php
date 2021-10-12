@@ -22,8 +22,8 @@ class FinalResult {
         }
         /** @var Array $header */
         $header = $dataCsv["header"];
-        $failureCode = $header[1];
-        $failureMessage = $header[2];
+        $failureCode = !$header[1] ? "" : $header[1];
+        $failureMessage =  !$header[2] ?  "" : $header[2];
         return [
             "filename" => basename($fileName),
             "document" => "",
@@ -35,29 +35,29 @@ class FinalResult {
 
     /**
      * parse data
-     * @input:  array Data
+     * @input:  array Data get from CV
      * @return  array[[
-     * "amount" => [
-     * "currency" => "VND",
-     * "subunits" => 100
-     * ],
-     * "bank_account_name" => ACB,
-     * "bank_account_number" => 123,
-     * "bank_branch_code" => ABC,
-     * "bank_code" => bankCode,
-     * "end_to_end_id" => endToAndId ]]
+     *          "amount" => [
+     *          "currency" => "VND",
+     *          "subunits" => 100
+     *          ],
+     *          "bank_account_name" => ACB,
+     *          "bank_account_number" => 123,
+     *          "bank_branch_code" => ABC,
+     *          "bank_code" => bankCode,
+     *          "end_to_end_id" => endToAndId ]]
      **/
     function parseData(string $currency, array $data): array
     {
         $recordData = array();
         //check total column of row = total column of CSV
         if (count($data) == TOTAL_COLUMN) {
-            $amt = !$data[8] || "0" == $data[8] ? 0 : (float)$data[8];
-            $bankAccNumber = !$data[6] ? BANK_ACC_NUMBER_MISS : (int)$data[6];
-            $bankBranchCode = !$data[2] ? BANK_BRANCH_CODE_MISS : $data[2];
-            $bankAccountName = str_replace(" ", "_", strtolower($data[7]));
-            $end2AndId = !$data[10] && !$data[11] ? END_2_END_ID_MISS : $data[10] . $data[11];
-            $bankCode = $data[0];
+            $amt = !$data[AMT] || "0" == $data[AMT] ? AMT_VALUE_DEFAULT : (float)$data[AMT];
+            $bankAccNumber = !$data[BANK_ACC_NUMBER] ? BANK_ACC_NUMBER_MISS : (int)$data[BANK_ACC_NUMBER];
+            $bankBranchCode = !$data[BANK_BRANCH_CODE] ? BANK_BRANCH_CODE_MISS : $data[BANK_BRANCH_CODE];
+            $bankAccountName = str_replace(" ", "_", strtolower($data[BANK_ACC_NAME]));
+            $end2EndId = !$data[END_ID] && !$data[END_ID_2] ? END_2_END_ID_MISS : $data[END_ID] . $data[END_ID_2];
+            $bankCode = $data[BANK_CODE];
             $recordData = [
                 "amount" => [
                     "currency" => $currency,
@@ -67,7 +67,7 @@ class FinalResult {
                 "bank_account_number" => $bankAccNumber,
                 "bank_branch_code" => $bankBranchCode,
                 "bank_code" => $bankCode,
-                "end_to_end_id" => $end2AndId,
+                "end_to_end_id" => $end2EndId,
             ];
         }
         return $recordData;
@@ -75,12 +75,12 @@ class FinalResult {
 
     /**
      * read file csV
-     * @input:  String $file,
-     *          int $length,
+     * @input:  String $file, file name
+     *          int $length, of row
      *          string $delimiter
      * @return  array[
-     * "header" => array[]
-     * "values" => array[]
+     *      "header" => array[]
+     *      "values" => array[]
      * ]
      **/
     function readCsv(string $file, int $length = ROW_LENGTH, string $delimiter = DELIMITER): array
@@ -100,7 +100,7 @@ class FinalResult {
             error_log("file:  " + $file + " data empty");
             return $dataResult;
         }
-        $currency = $header[0];
+        $currency = !$header[CURRENCY] ? "" : $header[CURRENCY];
         $dataResult["header"] = $header;
         //read data from CSV
         $records = [];
