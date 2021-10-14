@@ -3,7 +3,7 @@ include 'Constant.php';
 
 class FinalResult {
     /**
-     * read file csV and parse data
+     *
      * @input:  String fileName
      * @return  array[
             "filename" => "add",
@@ -75,13 +75,13 @@ class FinalResult {
     }
 
     /**
-     * read file csV
+     * read file csV and parse data to records and header
      * @input:  String $file, file name
      *          int $length, of row
      *          string $delimiter
      * @return  array[
      *      "header" => array[]
-     *      "values" => array[]
+     *      "records" => array[]
      * ]
      **/
     function readCsv(string $file, int $length = ROW_LENGTH, string $delimiter = DELIMITER): array
