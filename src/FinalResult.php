@@ -22,8 +22,8 @@ class FinalResult {
         }
         /** @var Array $header */
         $header = $dataCsv["header"];
-        $failureCode = !$header[1] ? "" : $header[1];
-        $failureMessage =  !$header[2] ?  "" : $header[2];
+        $failureCode = !$header[FAIL_CODE_COLUMN] ? "" : $header[FAIL_CODE_COLUMN];
+        $failureMessage =  !$header[FAIL_MESS_COLUMN] ?  "" : $header[FAIL_MESS_COLUMN];
         return [
             "filename" => basename($fileName),
             "document" => "",
@@ -49,28 +49,29 @@ class FinalResult {
      **/
     function parseData(string $currency, array $data): array
     {
-        $recordData = array();
         //check total column of row = total column of CSV
-        if (count($data) == TOTAL_COLUMN) {
-            $amt = !$data[AMT] || "0" == $data[AMT] ? AMT_VALUE_DEFAULT : (float)$data[AMT];
-            $bankAccNumber = !$data[BANK_ACC_NUMBER] ? BANK_ACC_NUMBER_MISS : (int)$data[BANK_ACC_NUMBER];
-            $bankBranchCode = !$data[BANK_BRANCH_CODE] ? BANK_BRANCH_CODE_MISS : $data[BANK_BRANCH_CODE];
-            $bankAccountName = str_replace(" ", "_", strtolower($data[BANK_ACC_NAME]));
-            $end2EndId = !$data[END_ID] && !$data[END_ID_2] ? END_2_END_ID_MISS : $data[END_ID] . $data[END_ID_2];
-            $bankCode = $data[BANK_CODE];
-            $recordData = [
-                "amount" => [
-                    "currency" => $currency,
-                    "subunits" => (int)($amt * UNIST)
-                ],
-                "bank_account_name" => $bankAccountName,
-                "bank_account_number" => $bankAccNumber,
-                "bank_branch_code" => $bankBranchCode,
-                "bank_code" => $bankCode,
-                "end_to_end_id" => $end2EndId,
-            ];
+        if (count($data) != TOTAL_COLUMN) {
+            return[];
         }
-        return $recordData;
+
+        $amt = !$data[AMT] || "0" == $data[AMT] ? AMT_VALUE_DEFAULT : (float)$data[AMT];
+        $bankAccNumber = !$data[BANK_ACC_NUMBER] ? BANK_ACC_NUMBER_MISS : (int)$data[BANK_ACC_NUMBER];
+        $bankBranchCode = !$data[BANK_BRANCH_CODE] ? BANK_BRANCH_CODE_MISS : $data[BANK_BRANCH_CODE];
+        $bankAccountName = str_replace(" ", "_", strtolower($data[BANK_ACC_NAME]));
+        $end2EndId = !$data[END_ID] && !$data[END_ID_2] ? END_2_END_ID_MISS : $data[END_ID] . $data[END_ID_2];
+        $bankCode = $data[BANK_CODE];
+        return  [
+            "amount" => [
+                "currency" => $currency,
+                "subunits" => (int)($amt * UNITS)
+            ],
+            "bank_account_name" => $bankAccountName,
+            "bank_account_number" => $bankAccNumber,
+            "bank_branch_code" => $bankBranchCode,
+            "bank_code" => $bankCode,
+            "end_to_end_id" => $end2EndId,
+        ];
+
     }
 
     /**
@@ -109,6 +110,7 @@ class FinalResult {
             $accountInfo = $this->parseData($currency, $data);
             if (empty($accountInfo)) {
                 error_log("Row" + $row + "Data Error");
+                break;
             }
             $records[] = $accountInfo;
             $row ++;
