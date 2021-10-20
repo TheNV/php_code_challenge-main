@@ -71,11 +71,10 @@ class FinalResult {
             "bank_code" => $bankCode,
             "end_to_end_id" => $end2EndId,
         ];
-
     }
 
     /**
-     * read file csV and parse data to records and header
+     * read file csV and parse data to records and headera
      * @input:  String $file, file name
      *          int $length, of row
      *          string $delimiter
